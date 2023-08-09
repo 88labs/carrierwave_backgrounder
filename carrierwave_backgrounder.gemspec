@@ -19,6 +19,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency "carrierwave", ">= 0.5", "< 3.1"
 
-  s.add_development_dependency "rspec", ["~> 3.10.0"]
+  s.add_development_dependency "rspec", "~> 3.12.0"
   s.add_development_dependency "rake"
 end
