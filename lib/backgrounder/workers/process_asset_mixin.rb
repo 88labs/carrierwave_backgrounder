@@ -1,7 +1,5 @@
-# encoding: utf-8
 module CarrierWave
   module Workers
-
     module ProcessAssetMixin
       include CarrierWave::Workers::Base
 
@@ -11,18 +9,27 @@ module CarrierWave
 
       def perform(*args)
         record = super(*args)
+        record.send(:"process_#{column}_upload=", true)
+        asset = record.send(:"#{column}")
 
-        if record && record.send(:"#{column}").present?
-          record.send(:"process_#{column}_upload=", true)
-          if record.send(:"#{column}").recreate_versions! && record.respond_to?(:"#{column}_processing")
-            record.update_attribute :"#{column}_processing", false
-          end
-        else
-          when_not_ready
-        end
+        return unless record && asset_present?(asset)
+
+        process_asset_by_cache!(asset)
+
+        return unless record.respond_to?(:"#{column}_processing")
+
+        record.update_attribute :"#{column}_processing", false
       end
 
-    end # ProcessAssetMixin
+      private
 
+      def process_asset_by_cache!(asset)
+        asset.is_a?(Array) ? asset.map(&:cache!) : asset.cache!
+      end
+
+      def asset_present?(asset)
+        asset.is_a?(Array) ? asset.present? : asset.file.present?
+      end
+    end # ProcessAssetMixin
   end # Workers
 end # Backgrounder
