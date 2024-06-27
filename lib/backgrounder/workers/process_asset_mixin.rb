@@ -9,11 +9,11 @@ module CarrierWave
 
       def perform(*args)
         record = super(*args)
-        record.send(:"process_#{column}_upload=", true)
+        return unless record.respond_to?(:"#{column}")
         asset = record.send(:"#{column}")
-
         return unless record && asset_present?(asset)
 
+        record.send(:"process_#{column}_upload=", true)
         process_asset_by_cache!(asset)
 
         return unless record.respond_to?(:"#{column}_processing")
